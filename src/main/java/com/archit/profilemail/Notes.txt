@@ -4,7 +4,7 @@ https://stackoverflow.com/questions/68314072/why-to-use-allargsconstructor-and-n
 Why we should not use Entity class directly as RequestBody in public facing method params:
 We don't use @RequestBody User user directly here because of following reasons:
 authService.registerUser(user)
-1. If your User entity has extra fields like id, roles, or createdAt, users might send unexpected data.
+1. If our User entity has extra fields like id, roles, or createdAt, users might send unexpected data.
    Ex - End user sends data with role = Admin, which was not intended but now saved in DB
 2. If we modify the User entity (e.g., add a new column), it could break our API because our API directly depends on the entity.
 3. Without proper validation, a user might send incomplete data, and our application might crash.

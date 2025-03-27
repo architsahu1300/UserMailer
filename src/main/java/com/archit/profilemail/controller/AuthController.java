@@ -10,13 +10,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
+
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
         //We don't use @RequestBody User user directly here because of following reasons:
@@ -28,10 +30,15 @@ public class AuthController {
 
         //Better option is to use DTO which contains the fields we need in order to register our user
         User newUser = new User();
-//        newUser.setEmail(req.getEmail());
+        newUser.setEmail(req.getEmail());
         System.out.println(req.getEmail());
-//        newUser.setPassword(req.getPassword());
+        newUser.setPassword(req.getPassword());
         authService.registerUser(newUser);
         return ResponseEntity.ok("User registered successfully");
+    }
+
+    @PostMapping("/user")
+    public ResponseEntity<User> user(@RequestBody String email) {
+        return ResponseEntity.ok(authService.findUserByEmail(email));
     }
 }

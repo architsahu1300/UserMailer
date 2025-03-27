@@ -1,11 +1,15 @@
 package com.archit.profilemail.config;
 
-import com.archit.profilemail.model.User;
-import com.archit.profilemail.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
@@ -15,17 +19,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserRepository userRepository() {
-        return new UserRepository() {
-            @Override
-            public User save(User user) {
-                return null;
-            }
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
-            @Override
-            public User findByEmail(String email) {
-                return null;
-            }
-        };
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)  // Fully disable CSRF
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // No session
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/register", "/auth/user").permitAll()  // Ensure public access
+                        .anyRequest().authenticated()
+                )
+                .anonymous(AbstractHttpConfigurer::disable);
+
+        return http.build();
     }
 }
