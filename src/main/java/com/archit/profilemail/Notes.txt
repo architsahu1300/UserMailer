@@ -15,3 +15,83 @@ We will need to define PasswordEncoder somewhere as a Bean for Spring to recogni
 We can extend JPARepository into a repository interface (UserRepository) and the naming conventions are here:
 https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html
 ----------------------------------------------------------
+
+package com.archit;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.startup.Tomcat;
+
+import java.io.File;
+
+/**
+ * Hello world!
+ */
+//______MVC______
+    //For a web app, we need 3 things: Servlets(to accept req and give response), jsp(frontend to show the data), objects(data which is present in backend as objects)
+    //We now have Controllers(servlets), View technologies(frontend/jsp), Model(data present as POJO)
+    //This is what MVC is. Controller accepts request, tells the DB what it wants and DB returns that data to Controller,
+    //which then sends data to View/frontend to display on the webpage
+    //P.S. since servers can only run servlets, jsp is converted to servlet behind the scene so it can run on the server
+public class App {
+    public static void main(String[] args) throws LifecycleException {
+        //We have the below line running by default. In order to call the service() method, we need to call the servlet we created
+        System.out.println("Hello World!");
+        //Since we added the embedded tomcat dependency, we will use that to give request to our servlet
+        //For embedded tomcat we need to do servlet mapping manually unlike annotations in standalone tomcat
+        Tomcat tc=new Tomcat();
+        String webp=System.getenv("PORT");
+        if(webp==null || webp.isEmpty()){
+            webp="8080";
+        }
+        tc.setPort(Integer.valueOf(webp));
+        tc.getConnector();
+        tc.setBaseDir("temp");
+        String docBase = new File(".").getAbsolutePath();
+
+        //addContext(""[because we want default],null[because we don't want a new directory])
+        Context context=tc.addContext("",docBase);
+        tc.addServlet(context,"h1",new HelloServlet());
+        context.addServletMappingDecoded("/hello","h1");
+        tc.start();
+        tc.getServer().await();
+
+    }
+}
+
+package com.archit;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+//Extending HttpServlet makes a class a Servlet.
+//We need maven dependency for servlet API
+//We have also added a embedded tomcat server
+public class HelloServlet extends HttpServlet {
+    //We cannot run servlets on JVM since there are http requests/response involved.
+    //We need a WEB container (Apache/tomcat) to run these servlets.
+    //Basically to run our code in the server we need a Web Archive (war) package and put that on the server to run.
+    //Tomcat has webapps folder which contains the app
+    //Inside bin folder it has startup.sh/shutdown.sh to start or stop the server
+    public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        //Service is the method which is executed whenever server get a request and has 2 parameters (for request and response)
+        //We have doGet & doPost methods to differentiate between type of requests.
+
+        //The below code is doing 3 things within this servlet (catching req, sending resp, doing processing)
+        //Ideally we want to keep these things separate for which we use MVC
+        System.out.println("Service method called");
+        //getWriter() gives us a pen to write anything on the browser page.
+        //We can define the content Type so that browser knows to convert it accordingly
+        res.setContentType("text/html");
+        PrintWriter out=res.getWriter();
+        out.println("<h2><i><b>Hello world!</b></i></h2>");
+    }
+
+}
+
+ -------------------------------------------------------------
