@@ -3,14 +3,12 @@ package com.archit.profilemail.controller;
 import com.archit.profilemail.dto.RegisterRequest;
 import com.archit.profilemail.model.User;
 import com.archit.profilemail.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -18,6 +16,13 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @GetMapping("/")
+    public void home(HttpServletResponse response) {
+        response.setContentType("text/html");
+        response.setStatus(HttpServletResponse.SC_OK);
+        System.out.println("Hello Archit");
+    }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
@@ -37,8 +42,10 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully");
     }
 
-    @PostMapping("/user")
+    @GetMapping("/user")
     public ResponseEntity<User> user(@RequestBody String email) {
         return ResponseEntity.ok(authService.findUserByEmail(email));
     }
+
+
 }
