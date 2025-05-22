@@ -1,13 +1,12 @@
 package com.archit.profilemail.controller;
 
 import com.archit.profilemail.dto.RegisterRequest;
-import com.archit.profilemail.model.User;
+import com.archit.profilemail.model.UserAccount;
 import com.archit.profilemail.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,18 +33,19 @@ public class AuthController {
         //3. Without proper validation, a user might send incomplete data, and our application might crash.
 
         //Better option is to use DTO which contains the fields we need in order to register our user
-        User newUser = new User();
-        newUser.setEmail(req.getEmail());
-        System.out.println(req.getEmail());
-        newUser.setPassword(req.getPassword());
-        authService.registerUser(newUser);
+        UserAccount newUserAccount = new UserAccount();
+        newUserAccount.setEmail(req.getEmail());
+        newUserAccount.setPassword(req.getPassword());
+        authService.registerUser(newUserAccount);
         return ResponseEntity.ok("User registered successfully");
     }
 
     @GetMapping("/user")
-    public ResponseEntity<User> user(@RequestBody String email) {
-        return ResponseEntity.ok(authService.findUserByEmail(email));
+    public ResponseEntity<UserAccount> user(@RequestBody String email) {
+        UserAccount userAccountFromDb = authService.findUserByEmail(email);
+        if(userAccountFromDb ==null){
+            return new ResponseEntity<>(HttpStatusCode.valueOf(404));
+        }
+        return ResponseEntity.ok(userAccountFromDb);
     }
-
-
 }

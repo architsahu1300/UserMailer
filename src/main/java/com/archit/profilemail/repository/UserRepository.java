@@ -1,13 +1,11 @@
 package com.archit.profilemail.repository;
 
-import com.archit.profilemail.model.User;
+import com.archit.profilemail.model.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    User save(User user);
-    Optional<User> findByEmail(String email);
+public interface UserRepository extends JpaRepository<UserAccount, Long> {
+    UserAccount save(UserAccount userAccount);
+    UserAccount findByEmail(String email);
 }

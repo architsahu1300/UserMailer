@@ -33,6 +33,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(AbstractHttpConfigurer::disable)  // disable CSRF for testing or APIs
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/auth/user").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .httpBasic(Customizer.withDefaults());
         http
                 .csrf(AbstractHttpConfigurer::disable)  // Fully disable CSRF
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // No session
@@ -42,17 +49,17 @@ public class SecurityConfig {
                 )
                 .httpBasic(Customizer.withDefaults())
                 .anonymous(AbstractHttpConfigurer::disable);
-
+//
         return http.build();
     }
 
     @Bean
     public UserDetailsService users() {
 //        System.out.println(passwordEncoder().encode("MyrdsdbAmazon"));
-        UserDetails user = User.withUsername("archit")
+        UserDetails user1 = User.withUsername("archit1")
                 .password("{noop}MyrdsdbAmazon")
                 .roles("ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+        return new InMemoryUserDetailsManager(user1);
     }
     }

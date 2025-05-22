@@ -2,13 +2,13 @@ Important note on why NoArgsConstructor is needed if we add AllArgsConstructor:
 https://stackoverflow.com/questions/68314072/why-to-use-allargsconstructor-and-noargsconstructor-together-over-an-entity#:~:text=Conclusion%3A,default%20constructor%20with%20no%20parameters
 ----------------------------------------------------------
 Why we should not use Entity class directly as RequestBody in public facing method params:
-We don't use @RequestBody User user directly here because of following reasons:
-authService.registerUser(user)
+We don't use @RequestBody User userAccount directly here because of following reasons:
+authService.registerUser(userAccount)
 1. If our User entity has extra fields like id, roles, or createdAt, users might send unexpected data.
-   Ex - End user sends data with role = Admin, which was not intended but now saved in DB
+   Ex - End userAccount sends data with role = Admin, which was not intended but now saved in DB
 2. If we modify the User entity (e.g., add a new column), it could break our API because our API directly depends on the entity.
-3. Without proper validation, a user might send incomplete data, and our application might crash.
-Better option is to use DTO which contains the fields we need in order to register our user
+3. Without proper validation, a userAccount might send incomplete data, and our application might crash.
+Better option is to use DTO which contains the fields we need in order to register our userAccount
 ----------------------------------------------------------
 We will need to define PasswordEncoder somewhere as a Bean for Spring to recognize and use it.
 ----------------------------------------------------------
