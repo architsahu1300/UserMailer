@@ -17,10 +17,11 @@ public class AuthController {
     private AuthService authService;
 
     @GetMapping("/")
-    public void home(HttpServletResponse response) {
+    public String home(HttpServletResponse response) {
         response.setContentType("text/html");
         response.setStatus(HttpServletResponse.SC_OK);
         System.out.println("Hello Archit");
+        return "Hello";
     }
 
     @PostMapping("/register")
@@ -41,11 +42,11 @@ public class AuthController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<UserAccount> user(@RequestBody String email) {
-        UserAccount userAccountFromDb = authService.findUserByEmail(email);
+    public ResponseEntity<String> user(@RequestBody String email) {
+        UserAccount userAccountFromDb = authService.loadUserByUsername(email);
         if(userAccountFromDb ==null){
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
-        return ResponseEntity.ok(userAccountFromDb);
+        return ResponseEntity.ok(userAccountFromDb.getEmail()+","+userAccountFromDb.getId());
     }
 }
