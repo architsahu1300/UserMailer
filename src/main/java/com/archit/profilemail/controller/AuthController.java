@@ -3,6 +3,7 @@ package com.archit.profilemail.controller;
 import com.archit.profilemail.dto.RegisterRequest;
 import com.archit.profilemail.model.UserAccount;
 import com.archit.profilemail.service.AuthService;
+import com.archit.profilemail.utils.JWTUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -15,6 +16,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JWTUtils jwtUtils;
 
     @GetMapping("/")
     public String home(HttpServletResponse response) {
@@ -37,8 +41,9 @@ public class AuthController {
         UserAccount newUserAccount = new UserAccount();
         newUserAccount.setEmail(req.getEmail());
         newUserAccount.setPassword(req.getPassword());
+        String token = jwtUtils.generateToken(newUserAccount);
         authService.registerUser(newUserAccount);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("User registered successfully with JWT toke: " + token);
     }
 
     @GetMapping("/user")
