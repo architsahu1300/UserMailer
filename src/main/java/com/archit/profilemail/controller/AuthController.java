@@ -1,13 +1,12 @@
 package com.archit.profilemail.controller;
 
-import com.archit.profilemail.dto.AuthResponse;
-import com.archit.profilemail.dto.LoginRequest;
-import com.archit.profilemail.dto.RegisterRequest;
+import com.archit.profilemail.dtos.AuthResponse;
+import com.archit.profilemail.dtos.LoginRequest;
+import com.archit.profilemail.dtos.RegisterRequest;
 import com.archit.profilemail.model.UserAccount;
-import com.archit.profilemail.service.AuthService;
+import com.archit.profilemail.service.auth.AuthService;
 import com.archit.profilemail.utils.JWTUtils;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;

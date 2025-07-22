@@ -1,6 +1,6 @@
 package com.archit.profilemail.controller;
 
-import com.archit.profilemail.service.CSVImportService;
+import com.archit.profilemail.service.upload.CSVImportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

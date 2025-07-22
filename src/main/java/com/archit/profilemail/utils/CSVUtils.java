@@ -1,5 +1,6 @@
 package com.archit.profilemail.utils;
 
+import com.archit.profilemail.dtos.CSVValidationResult;
 import com.archit.profilemail.model.Profile;
 import com.archit.profilemail.model.ProfileProperty;
 import com.archit.profilemail.model.UserAccount;
@@ -18,19 +19,27 @@ public class CSVUtils {
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
 
-    public List<Profile> extractValidProfiles(String csvContent, UserAccount owner) {
+    public CSVValidationResult extractValidProfiles(String csvContent, UserAccount owner) {
         String[] rows = csvContent.split("\n");
-        if (rows.length < 2) return Collections.emptyList();
+        if (rows.length < 2) return CSVValidationResult.builder()
+                .invalidRows(Collections.emptyList())
+                .validProfiles(Collections.emptyList())
+                .build();
 
         String[] columns = rows[0].split(",");
         Profile[] allProfiles = createProfiles(columns, rows, owner);
 
+        List<Integer> invalidRows = new ArrayList<>();
         List<Profile> validProfiles = new ArrayList<>();
         for (int i = 0; i < allProfiles.length; i++) {
             Profile profile = allProfiles[i];
-            if (profile == null) continue;
+            if (profile == null) {
+                invalidRows.add(i+2);
+                continue;
+            }
             String email = profile.getEmail();
             if (email == null || email.trim().isEmpty() || !EMAIL_PATTERN.matcher(email).matches()) {
+                invalidRows.add(i+2);
                 System.out.println("Invalid email skipped at index " + i + ": " + email);
                 continue;
             }
@@ -38,7 +47,10 @@ public class CSVUtils {
             validProfiles.add(profile);
         }
 
-        return validProfiles;
+        return CSVValidationResult.builder()
+                .invalidRows(invalidRows)
+                .validProfiles(validProfiles)
+                .build();
     }
 
     public List<Profile> removeDuplicates(

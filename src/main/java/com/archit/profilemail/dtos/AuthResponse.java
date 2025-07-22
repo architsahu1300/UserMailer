@@ -1,4 +1,4 @@
-package com.archit.profilemail.dto;
+package com.archit.profilemail.dtos;
 
 public class AuthResponse {
     private final String token;

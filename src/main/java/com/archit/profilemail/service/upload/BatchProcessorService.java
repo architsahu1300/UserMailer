@@ -1,4 +1,4 @@
-package com.archit.profilemail.service;
+package com.archit.profilemail.service.upload;
 
 import com.archit.profilemail.model.Profile;
 import com.archit.profilemail.repository.ProfileRepository;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class BatchProcessorService {
@@ -22,7 +23,7 @@ public class BatchProcessorService {
     }
 
     @Async("csvTaskExecutor")
-    public void processInBatches(List<Profile> profileBatch) {
+    public CompletableFuture<Void> processInBatches(List<Profile> profileBatch) {
         String sql = "INSERT INTO profilesdb (email, owner_id) VALUES (?, ?)";
 
         List<Object[]> batchArgs = new ArrayList<>();
@@ -41,5 +42,6 @@ public class BatchProcessorService {
         }
 //        profileRepository.saveAll(profileBatch);
         System.out.println("Process - end - " + System.currentTimeMillis());
+        return CompletableFuture.completedFuture(null);
     }
 }

@@ -1,10 +1,8 @@
-package com.archit.profilemail.service;
+package com.archit.profilemail.service.auth;
 
 import com.archit.profilemail.model.UserAccount;
 import com.archit.profilemail.repository.UserAccountRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
