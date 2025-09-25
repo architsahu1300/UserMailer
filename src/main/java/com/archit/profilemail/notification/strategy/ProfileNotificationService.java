@@ -12,6 +12,5 @@ public class ProfileNotificationService implements NotificationStrategy{
 
     @Override
     public void sendMessage(Message message) {
-
     }
 }
