@@ -1,6 +1,6 @@
 package com.archit.profilemail.notification.strategy;
 
-import com.archit.profilemail.dtos.NotificationRequest;
+import com.archit.profilemail.notification.strategy.structures.Message;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,7 +11,7 @@ public class ProfileNotificationService implements NotificationStrategy{
     }
 
     @Override
-    public void sendMessage(NotificationRequest request) {
+    public void sendMessage(Message message) {
 
     }
 }
