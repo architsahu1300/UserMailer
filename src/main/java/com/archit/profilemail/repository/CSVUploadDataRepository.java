@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface CSVUploadDataRepository extends JpaRepository<CSVUploadData,Long> {
-    List<CSVUploadData> findByUserAccountEmail(String username);
+    List<CSVUploadData> findByOwnerEmail(String email);
 }

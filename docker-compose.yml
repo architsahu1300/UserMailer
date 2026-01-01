@@ -1,0 +1,161 @@
+# =============================================================================
+# DOCKER COMPOSE - ORCHESTRATES ALL YOUR SERVICES
+# =============================================================================
+# This file defines all the containers that make up your application:
+# - api: The REST API that handles HTTP requests
+# - worker: Background processor that consumes jobs from Redis
+# - redis: Message queue for job distribution
+# - postgres: Database (optional, you can use Neon instead)
+#
+# Run with: docker-compose up -d
+# Scale workers: docker-compose up -d --scale worker=5
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # API SERVICE
+  # ---------------------------------------------------------------------------
+  # This container handles all HTTP requests (uploads, auth, etc.)
+  # It pushes jobs to Redis but does NOT process them
+  api:
+    build:
+      context: .                    # Build from current directory
+      dockerfile: Dockerfile        # Using our Dockerfile
+    container_name: profilemail-api
+    ports:
+      - "8080:8080"                 # Map host port 8080 to container port 8080
+    environment:
+      # Tell Spring Boot to use the "api" profile
+      - SPRING_PROFILES_ACTIVE=api
+      
+      # Database connection (using Neon - external)
+      # These use your existing Neon database
+      - SPRING_DATASOURCE_URL=${DATABASE_URL:-jdbc:postgresql://host.docker.internal:5432/profilemail}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-user}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:-password}
+      
+      # Redis connection (internal container)
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      
+      # Backblaze S3 settings
+      - BACKBLAZE_ENDPOINT=${BACKBLAZE_ENDPOINT:-s3.us-east-005.backblazeb2.com}
+      - BACKBLAZE_BUCKET=${BACKBLAZE_BUCKET:-usermailer-bucket}
+      - BACKBLAZE_ACCESS_KEY=${BACKBLAZE_ACCESS_KEY}
+      - BACKBLAZE_SECRET_KEY=${BACKBLAZE_SECRET_KEY}
+      
+      # SendGrid for emails
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      
+      # JWT Secret for authentication
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+    depends_on:
+      - redis                       # Wait for Redis to start first
+    networks:
+      - profilemail-network
+    restart: unless-stopped         # Auto-restart if container crashes
+
+  # ---------------------------------------------------------------------------
+  # WORKER SERVICE
+  # ---------------------------------------------------------------------------
+  # This container processes jobs from Redis:
+  # 1. Picks up job from Redis Stream
+  # 2. Downloads file from S3
+  # 3. Parses CSV
+  # 4. Inserts into database
+  # 5. Sends notification email
+  #
+  # You can run multiple workers: docker-compose up -d --scale worker=5
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # No container_name here - allows multiple instances (worker-1, worker-2, etc.)
+    # No ports - workers don't receive HTTP traffic
+    environment:
+      # Tell Spring Boot to use the "worker" profile
+      - SPRING_PROFILES_ACTIVE=worker
+      
+      # Same database connection as API
+      - SPRING_DATASOURCE_URL=${DATABASE_URL:-jdbc:postgresql://host.docker.internal:5432/profilemail}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-user}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:-password}
+      
+      # Redis connection
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      
+      # Backblaze settings (worker needs to download files)
+      - BACKBLAZE_ENDPOINT=${BACKBLAZE_ENDPOINT:-s3.us-east-005.backblazeb2.com}
+      - BACKBLAZE_BUCKET=${BACKBLAZE_BUCKET:-usermailer-bucket}
+      - BACKBLAZE_ACCESS_KEY=${BACKBLAZE_ACCESS_KEY}
+      - BACKBLAZE_SECRET_KEY=${BACKBLAZE_SECRET_KEY}
+      
+      # SendGrid for sending completion emails
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+    depends_on:
+      - redis
+    networks:
+      - profilemail-network
+    restart: unless-stopped
+    deploy:
+      replicas: 2                   # Start with 2 worker instances
+
+  # ---------------------------------------------------------------------------
+  # REDIS SERVICE
+  # ---------------------------------------------------------------------------
+  # Redis is our message queue. It stores the job stream that workers consume.
+  # Using Redis 7 with Alpine (small image size)
+  redis:
+    image: redis:7-alpine
+    container_name: profilemail-redis
+    ports:
+      - "6379:6379"                 # Expose for debugging (optional in production)
+    volumes:
+      # Persist Redis data so jobs survive container restart
+      - redis_data:/data
+    command: redis-server --appendonly yes  # Enable persistence
+    networks:
+      - profilemail-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # POSTGRESQL SERVICE (Optional - Use if you want local DB instead of Neon)
+  # ---------------------------------------------------------------------------
+  # Uncomment this section if you want to run PostgreSQL locally
+  # instead of using Neon cloud database
+  #
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: profilemail-postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_DB=profilemail
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_PASSWORD=password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - profilemail-network
+  #   restart: unless-stopped
+
+# -----------------------------------------------------------------------------
+# NETWORKS
+# -----------------------------------------------------------------------------
+# All containers are on the same network so they can communicate
+# by container name (e.g., "redis" resolves to Redis container's IP)
+networks:
+  profilemail-network:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# VOLUMES
+# -----------------------------------------------------------------------------
+# Persistent storage for Redis (and PostgreSQL if enabled)
+volumes:
+  redis_data:
+  # postgres_data:  # Uncomment if using local PostgreSQL
+
