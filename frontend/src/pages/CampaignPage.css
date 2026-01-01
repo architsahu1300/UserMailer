@@ -1,0 +1,198 @@
+/**
+ * CampaignPage.css - CAMPAIGN PAGE STYLES
+ * ========================================
+ */
+
+/* Main grid layout */
+.campaign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 1024px) {
+  .campaign-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form section */
+.campaign-form-section {
+  max-width: 600px;
+}
+
+.campaign-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 32px;
+}
+
+.form-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.message-textarea {
+  resize: vertical;
+  min-height: 200px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+/* Placeholder buttons */
+.placeholder-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.placeholder-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.placeholder-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--accent-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.placeholder-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Preview section */
+.campaign-preview-section {
+  position: sticky;
+  top: 100px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.preview-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.preview-badge {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Email preview card */
+.email-preview {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+}
+
+.preview-email-header {
+  background: #f4f4f5;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.preview-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #52525b;
+  margin-bottom: 6px;
+}
+
+.preview-row:last-child {
+  margin-bottom: 0;
+}
+
+.preview-label {
+  color: #71717a;
+  min-width: 60px;
+}
+
+.preview-subject {
+  color: #18181b;
+  font-weight: 600;
+}
+
+.preview-email-body {
+  padding: 24px 20px;
+  min-height: 200px;
+  color: #18181b;
+}
+
+.preview-content p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.preview-placeholder {
+  color: #a1a1aa;
+  font-style: italic;
+}
+
+/* Info card */
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.info-card h4 {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.info-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-card li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.info-card li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent-primary);
+}
+

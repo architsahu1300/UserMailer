@@ -2,36 +2,71 @@
 # DOCKER COMPOSE - ORCHESTRATES ALL YOUR SERVICES
 # =============================================================================
 # This file defines all the containers that make up your application:
+# - frontend: Nginx serving React static files + reverse proxy to API
 # - api: The REST API that handles HTTP requests
 # - worker: Background processor that consumes jobs from Redis
 # - redis: Message queue for job distribution
-# - postgres: Database (optional, you can use Neon instead)
 #
-# Run with: docker-compose up -d
-# Scale workers: docker-compose up -d --scale worker=5
+# Architecture:
+#   Browser → Nginx (port 80) → Static files (React)
+#                             → Proxy /api/* to Spring Boot API
+#                             → Proxy /auth/* to Spring Boot API
+#
+# Commands:
+#   Start all:        docker-compose up -d
+#   Scale workers:    docker-compose up -d --scale worker=5
+#   View logs:        docker-compose logs -f
+#   Stop all:         docker-compose down
+#   Rebuild:          docker-compose up -d --build
 # =============================================================================
 
 version: '3.8'
 
 services:
   # ---------------------------------------------------------------------------
-  # API SERVICE
+  # FRONTEND SERVICE (Nginx + React)
+  # ---------------------------------------------------------------------------
+  # Serves the React frontend and proxies API requests to the backend
+  frontend:
+    build:
+      context: ./frontend           # Build from frontend directory
+      dockerfile: Dockerfile
+    container_name: profilemail-frontend
+    ports:
+      - "80:80"                     # Expose on port 80 (HTTP)
+      # - "443:443"                 # Uncomment for HTTPS (add SSL config to nginx.conf)
+    depends_on:
+      - api                         # Wait for API to be available
+    networks:
+      - profilemail-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # API SERVICE (Spring Boot)
   # ---------------------------------------------------------------------------
   # This container handles all HTTP requests (uploads, auth, etc.)
   # It pushes jobs to Redis but does NOT process them
   api:
     build:
-      context: .                    # Build from current directory
-      dockerfile: Dockerfile        # Using our Dockerfile
+      context: .                    # Build from project root
+      dockerfile: Dockerfile
     container_name: profilemail-api
-    ports:
-      - "8080:8080"                 # Map host port 8080 to container port 8080
+    # No external ports - only accessible through Nginx proxy
+    # Uncomment below for direct API access (debugging)
+    # ports:
+    #   - "8080:8080"
+    expose:
+      - "8080"                      # Internal port for Nginx to connect
     environment:
       # Tell Spring Boot to use the "api" profile
       - SPRING_PROFILES_ACTIVE=api
       
       # Database connection (using Neon - external)
-      # These use your existing Neon database
       - SPRING_DATASOURCE_URL=${DATABASE_URL:-jdbc:postgresql://host.docker.internal:5432/profilemail}
       - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-user}
       - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:-password}
@@ -52,13 +87,13 @@ services:
       # JWT Secret for authentication
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
     depends_on:
-      - redis                       # Wait for Redis to start first
+      - redis
     networks:
       - profilemail-network
-    restart: unless-stopped         # Auto-restart if container crashes
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # WORKER SERVICE
+  # WORKER SERVICE (Spring Boot - Background Processing)
   # ---------------------------------------------------------------------------
   # This container processes jobs from Redis:
   # 1. Picks up job from Redis Stream
@@ -67,18 +102,18 @@ services:
   # 4. Inserts into database
   # 5. Sends notification email
   #
-  # You can run multiple workers: docker-compose up -d --scale worker=5
+  # Scale workers: docker-compose up -d --scale worker=5
   worker:
     build:
       context: .
       dockerfile: Dockerfile
-    # No container_name here - allows multiple instances (worker-1, worker-2, etc.)
+    # No container_name - allows multiple instances
     # No ports - workers don't receive HTTP traffic
     environment:
       # Tell Spring Boot to use the "worker" profile
       - SPRING_PROFILES_ACTIVE=worker
       
-      # Same database connection as API
+      # Database connection
       - SPRING_DATASOURCE_URL=${DATABASE_URL:-jdbc:postgresql://host.docker.internal:5432/profilemail}
       - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-user}
       - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:-password}
@@ -87,7 +122,7 @@ services:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       
-      # Backblaze settings (worker needs to download files)
+      # Backblaze settings
       - BACKBLAZE_ENDPOINT=${BACKBLAZE_ENDPOINT:-s3.us-east-005.backblazeb2.com}
       - BACKBLAZE_BUCKET=${BACKBLAZE_BUCKET:-usermailer-bucket}
       - BACKBLAZE_ACCESS_KEY=${BACKBLAZE_ACCESS_KEY}
@@ -107,31 +142,36 @@ services:
   # REDIS SERVICE
   # ---------------------------------------------------------------------------
   # Redis is our message queue. It stores the job stream that workers consume.
-  # Using Redis 7 with Alpine (small image size)
   redis:
     image: redis:7-alpine
     container_name: profilemail-redis
-    ports:
-      - "6379:6379"                 # Expose for debugging (optional in production)
+    # Only expose for debugging - comment out in production
+    # ports:
+    #   - "6379:6379"
+    expose:
+      - "6379"
     volumes:
-      # Persist Redis data so jobs survive container restart
       - redis_data:/data
-    command: redis-server --appendonly yes  # Enable persistence
+    command: redis-server --appendonly yes
     networks:
       - profilemail-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   # ---------------------------------------------------------------------------
   # POSTGRESQL SERVICE (Optional - Use if you want local DB instead of Neon)
   # ---------------------------------------------------------------------------
-  # Uncomment this section if you want to run PostgreSQL locally
-  # instead of using Neon cloud database
+  # Uncomment if you want to run PostgreSQL locally
   #
   # postgres:
   #   image: postgres:15-alpine
   #   container_name: profilemail-postgres
-  #   ports:
-  #     - "5432:5432"
+  #   expose:
+  #     - "5432"
   #   environment:
   #     - POSTGRES_DB=profilemail
   #     - POSTGRES_USER=user
@@ -141,12 +181,15 @@ services:
   #   networks:
   #     - profilemail-network
   #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U user -d profilemail"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
 # -----------------------------------------------------------------------------
 # NETWORKS
 # -----------------------------------------------------------------------------
-# All containers are on the same network so they can communicate
-# by container name (e.g., "redis" resolves to Redis container's IP)
 networks:
   profilemail-network:
     driver: bridge
@@ -154,8 +197,6 @@ networks:
 # -----------------------------------------------------------------------------
 # VOLUMES
 # -----------------------------------------------------------------------------
-# Persistent storage for Redis (and PostgreSQL if enabled)
 volumes:
   redis_data:
-  # postgres_data:  # Uncomment if using local PostgreSQL
-
+  # postgres_data:

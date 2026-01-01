@@ -41,4 +41,3 @@ public class WebConfig {
     // All web-related beans are loaded through this single configuration
     // when running as a web application (API profile)
 }
-

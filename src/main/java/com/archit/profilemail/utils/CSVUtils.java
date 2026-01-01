@@ -79,12 +79,22 @@ public class CSVUtils {
     private Profile[] createProfiles(String[] columns, String[] rows, UserAccount owner){
         Profile[] profiles = new Profile[rows.length-1];
         for(int i=1;i<rows.length;i++){
-            String[] rowData = rows[i].split(",");
+            String row = rows[i].trim().replace("\r", "");
+            // Skip empty rows
+            if (row.isEmpty()) {
+                profiles[i-1] = null;
+                continue;
+            }
+            String[] rowData = row.split(",");
+            if (rowData.length == 0) {
+                profiles[i-1] = null;
+                continue;
+            }
             Profile temp = new Profile();
-            temp.setEmail(rowData[0]);
+            temp.setEmail(rowData[0].trim());
             temp.setOwner(owner);
-            setProperties(rowData,columns,temp);
-            profiles[i-1]=temp;
+            setProperties(rowData, columns, temp);
+            profiles[i-1] = temp;
         }
         return profiles;
     }
@@ -92,8 +102,11 @@ public class CSVUtils {
         List<ProfileProperty> props = new ArrayList<>();
         for(int i=1;i<columns.length;i++){
             ProfileProperty temp = new ProfileProperty();
-            temp.setKey(columns[i]);
-            temp.setValue(rowData[i]);
+            // Trim whitespace and carriage returns from column names and values
+            String key = columns[i].trim().replace("\r", "");
+            String value = (i < rowData.length) ? rowData[i].trim().replace("\r", "") : "";
+            temp.setKey(key);
+            temp.setValue(value);
             temp.setProfile(profile);
             props.add(temp);
         }
