@@ -1,0 +1,37 @@
+# =============================================================================
+# DOCKER IGNORE FOR FRONTEND
+# =============================================================================
+
+# Dependencies (installed inside container)
+node_modules
+
+# Build output (built inside container)
+dist
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+*.test.js
+*.spec.js
+coverage/
+
+# Misc
+.DS_Store
+*.md
+
+

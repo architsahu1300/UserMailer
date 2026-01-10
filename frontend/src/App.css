@@ -1,0 +1,78 @@
+/**
+ * App.css - NAVIGATION STYLES
+ * ============================
+ * Styles for the main navigation bar.
+ */
+
+/* Main navigation bar */
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+/* Brand/Logo section */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.brand-icon {
+  font-size: 28px;
+}
+
+.brand-text {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Navigation links container */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Individual navigation links */
+.nav-link {
+  padding: 10px 18px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Logout button */
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.logout-btn:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+
