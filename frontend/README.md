@@ -155,3 +155,4 @@ A: Edit `vite.config.js` and change the proxy target.
 **Q: I see CORS errors in console?**
 A: Make sure the SecurityConfig.java has CORS enabled (we added this).
 
+

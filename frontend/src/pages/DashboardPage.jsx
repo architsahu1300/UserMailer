@@ -31,6 +31,7 @@ import './DashboardPage.css';
 function DashboardPage() {
   // State for profiles
   const [profiles, setProfiles] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   
   // State for file upload
@@ -64,7 +65,8 @@ function DashboardPage() {
     try {
       setLoading(true);
       const data = await getProfiles();
-      setProfiles(data.profiles);
+      setProfiles(data.profiles || []);
+      setTotalCount(data.totalCount || 0);  // Store the actual total count
     } catch (err) {
       console.error('Failed to load profiles:', err);
     } finally {
@@ -129,7 +131,7 @@ function DashboardPage() {
         <div className="stat-card">
           <div className="stat-icon">👥</div>
           <div className="stat-info">
-            <span className="stat-value">{profiles.length}</span>
+            <span className="stat-value">{totalCount}</span>
             <span className="stat-label">Total Profiles</span>
           </div>
         </div>
@@ -235,7 +237,7 @@ function DashboardPage() {
       <section className="dashboard-section">
         <div className="section-header">
           <h2>Your Profiles</h2>
-          <span className="section-badge">{profiles.length} profiles</span>
+          <span className="section-badge">{totalCount} profiles</span>
         </div>
         
         {loading ? (

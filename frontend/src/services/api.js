@@ -217,33 +217,129 @@ export const getProfile = async (id) => {
 };
 
 // =============================================================================
-// CAMPAIGN APIs (Backend to be implemented later)
+// CAMPAIGN APIs
 // =============================================================================
 
 /**
  * Create a new campaign.
- * NOTE: Backend endpoint doesn't exist yet - we'll build it later.
+ * Calls: POST /api/campaigns
  */
 export const createCampaign = async (campaignData) => {
-  // TODO: Implement when backend is ready
-  // const response = await authFetch('/api/campaigns', {
-  //   method: 'POST',
-  //   body: JSON.stringify(campaignData),
-  // });
+  const response = await authFetch('/api/campaigns', {
+    method: 'POST',
+    body: JSON.stringify(campaignData),
+  });
   
-  // For now, just log and return success
-  console.log('Campaign data to be sent:', campaignData);
-  return { success: true, message: 'Campaign created (mock)' };
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to create campaign');
+  }
+  
+  return data;
 };
 
 /**
- * Get user's campaigns.
- * NOTE: Backend endpoint doesn't exist yet.
+ * Get user's campaigns (paginated).
+ * Calls: GET /api/campaigns?page=X&size=Y
  */
-export const getCampaigns = async () => {
-  // TODO: Implement when backend is ready
-  return {
-    campaigns: [],
-  };
+export const getCampaigns = async (page = 0, size = 10) => {
+  const response = await authFetch(`/api/campaigns?page=${page}&size=${size}`);
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to get campaigns');
+  }
+  
+  return data;
 };
 
+/**
+ * Get a single campaign by ID.
+ * Calls: GET /api/campaigns/{id}
+ */
+export const getCampaign = async (id) => {
+  const response = await authFetch(`/api/campaigns/${id}`);
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to get campaign');
+  }
+  
+  return data;
+};
+
+/**
+ * Cancel a campaign.
+ * Calls: DELETE /api/campaigns/{id}
+ */
+export const cancelCampaign = async (id) => {
+  const response = await authFetch(`/api/campaigns/${id}`, {
+    method: 'DELETE',
+  });
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to cancel campaign');
+  }
+  
+  return data;
+};
+
+/**
+ * Preview filter results before creating a campaign.
+ * Calls: POST /api/campaigns/preview
+ */
+export const previewFilters = async (filters, filterLogic = 'AND', sampleSize = 5) => {
+  const response = await authFetch('/api/campaigns/preview', {
+    method: 'POST',
+    body: JSON.stringify({
+      filters,
+      filterLogic,
+      sampleSize,
+    }),
+  });
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to preview filters');
+  }
+  
+  return data;
+};
+
+/**
+ * Get available property keys for filtering.
+ * Calls: GET /api/campaigns/properties
+ */
+export const getPropertyKeys = async () => {
+  const response = await authFetch('/api/campaigns/properties');
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to get property keys');
+  }
+  
+  return data;
+};
+
+/**
+ * Get values for a specific property key (for autocomplete).
+ * Calls: GET /api/campaigns/properties/{key}/values
+ */
+export const getPropertyValues = async (key, limit = 50) => {
+  const response = await authFetch(`/api/campaigns/properties/${encodeURIComponent(key)}/values?limit=${limit}`);
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to get property values');
+  }
+  
+  return data;
+};

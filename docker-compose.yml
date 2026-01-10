@@ -145,9 +145,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: profilemail-redis
-    # Only expose for debugging - comment out in production
-    # ports:
-    #   - "6379:6379"
+    # Expose Redis port to host for local development
+    ports:
+      - "6379:6379"
     expose:
       - "6379"
     volumes:
